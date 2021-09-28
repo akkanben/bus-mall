@@ -138,3 +138,28 @@ tr:last-child {
   border-bottom: solid thin white;
 }
 
+button {
+  border: none;
+  margin-top: 2em;
+  font-size: 1.1em;
+  padding: 1em 1.4em;
+}
+
+button:hover {
+  box-shadow:
+    1px 2px 2px #00000050,
+    2px 4px 4px  #00000050,
+    4px 8px 8px  #00000050,
+    8px 16px 16px  #00000080,
+    16px 32px 32px  #00000080;
+}
+button:active {
+  filter: blur(1px);
+  filter: opacity(90%);
+  box-shadow:
+    1px 2px 2px #00000080,
+    2px 4px 4px #00000080,
+    4px 8px 8px #00000080, 
+    8px 16px 16px grey,
+    16px 32px 32px grey;
+}

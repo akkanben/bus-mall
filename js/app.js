@@ -147,12 +147,27 @@ ImageCandidate.drawStats = function () {
   }
 };
 
+ImageCandidate.handleBtnClick = function (event) {
+  event.target.remove();
+  ImageCandidate.drawStats();
+
+};
+
+
+ImageCandidate.drawButton = function () {
+  let parentEl = document.getElementById('btn-here');
+  let btnEl = document.createElement('button');
+  btnEl.innerText = 'View Results';
+  parentEl.appendChild(btnEl);
+  btnEl.addEventListener('click', this.handleBtnClick);
+};
+
 ImageCandidate.handleCandidateClick = function (event) {
   event.preventDefault();
   if (currentRound >= totalNumberOfRounds) {
     ImageCandidate.drawRound();
     ImageCandidate.removeImageListeners();
-    ImageCandidate.drawStats();
+    ImageCandidate.drawButton();
   } else {
     let targetImageEl = event.target;
     ImageCandidate.recordClick(targetImageEl);
@@ -177,16 +192,6 @@ ImageCandidate.addImageListeners = function () {
     imageArray[i].addEventListener('click', ImageCandidate.handleCandidateClick);
   }
 };
-
-
-
-// function to show report
-
-// button to view results
-
-
-
-
 
 ImageCandidate.createImageHolders(candidatesPerScreen);
 ImageCandidate.createAllImageCandidates();
