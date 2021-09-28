@@ -28,3 +28,8 @@ footer {
   height: 10%;
   background-color: #2f2f2f;
 }
+
+img.candidate {
+  max-width: 200px;
+  max-height: 200px;
+}
