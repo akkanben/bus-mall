@@ -4,23 +4,37 @@ header {
   display: block;
   background-color: #afafaf;
 }
+body {
+  background-color: white;
+}
 main {
-  /*height: 80%;*/
-  /*width: 75%;*/
+  background-color: white;
+  height: 90%;
+}
+h1 {
+  font-size: 3em;
+  padding: 1em;
+}
+h2 {
+  color: white;
+  font-size: 2em;
+  font-weight: bold;
+  margin-top: 1em;
 }
 
 aside {
+  text-align: center;
   display: inline-block;
   width: 25%;
   height: 90%;
-  background-color: #8f8f8f;
+  background-color: #4a4a4a;
 }
 
 article {
-  display: inline-block;
   height: 80%;
-  width: 74%;
+  width: 75%;
   background-color: white;
+  float: right;
 }
 
 footer {
@@ -44,3 +58,28 @@ img.candidate {
   max-height: 300px;
   border: solid thick black;
 }
+table {
+  display: inline-block;
+  margin: 2em 2em;
+  background-color: #bdbdbd;
+    box-shadow:
+    1px 2px 2px #0000001f ,
+    2px 4px 4px  #0000001f ,
+    4px 8px 8px  #0000001f ,
+    8px 16px 16px  #0000001f ,
+    16px 32px 32px  #0000001f;
+}
+td  {
+  border-left: solid thin white;
+  border-right: solid thin white;
+  border-top: solid thin white;
+  padding: .5em;
+}
+tr:first-child {
+  background-color: grey;
+}
+
+tr:last-child {
+  border-bottom: solid thin white;
+}
+

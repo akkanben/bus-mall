@@ -25,6 +25,7 @@ const totalNumberOfRounds = 25;
 let currentRound = 1;
 let allImageCandidates = [];
 let candidatesPerScreen = 3;
+let stats = ['Name', 'Clicks', 'Times Seen'];
 
 // constuctor for image object
 
@@ -39,13 +40,21 @@ function ImageCandidate(name, fileName) {
 
 ImageCandidate.currentList = [];
 ImageCandidate.oldList = [];
-ImageCandidate.parentElement = document.getElementById('selection-container');
 
 ImageCandidate.createImageHolders = function (numberOfImages) {
+  let parentElement = document.getElementById('selection-container');
   for (let i = 0; i < numberOfImages; i++) {
     let imgEl = document.createElement('img');
     imgEl.className = 'candidate';
-    ImageCandidate.parentElement.append(imgEl);
+    parentElement.append(imgEl);
+  }
+};
+
+ImageCandidate.recordClick = function (clickedElement) {
+  for (let i = 0; i < allImageCandidates.length; i++) {
+    if (allImageCandidates[i].name === clickedElement.name) {
+      allImageCandidates[i].clickCount++;
+    }
   }
 };
 
@@ -58,9 +67,6 @@ ImageCandidate.createAllImageCandidates = function () {
   }
 };
 
-
-
-
 // function to generate a valid index
 ImageCandidate.getRandomAvaliableIndex = function () {
   let randomIndex = null;
@@ -69,7 +75,6 @@ ImageCandidate.getRandomAvaliableIndex = function () {
   }
   return randomIndex;
 };
-
 
 // function to render members of currentSet
 ImageCandidate.renderCandidates = function () {
@@ -80,7 +85,6 @@ ImageCandidate.renderCandidates = function () {
     imgEl.src = `./img/${allImageCandidates[ImageCandidate.currentList[i]].fileName}`;
   }
 };
-
 
 ImageCandidate.resetLastSeen = function () {
   for (let i = 0; i < ImageCandidate.oldList.length; i++) {
@@ -98,19 +102,73 @@ ImageCandidate.getNextGroup = function () {
   for (let i = 0; i < candidatesPerScreen; i++) {
     ImageCandidate.currentList[i] = ImageCandidate.getRandomAvaliableIndex();
     allImageCandidates[ImageCandidate.currentList[i]].seenLast = true;
+    allImageCandidates[ImageCandidate.currentList[i]].seenCount++;
   }
   ImageCandidate.resetLastSeen();
   ImageCandidate.currentListToOldList();
 };
 
+ImageCandidate.drawRound = function () {
+  let roundCountEl = document.getElementById('round-count');
+  roundCountEl.innerText = `Round ${currentRound} of ${totalNumberOfRounds}`;
+};
+
+ImageCandidate.drawStats = function () {
+  let statTableEl = document.getElementById('stats-table');
+  let tableHeader = document.createElement('tr');
+  for (let i = 0; i < stats.length; i++) {
+    let dataEl = document.createElement('td');
+    dataEl.innerText = stats[i];
+    tableHeader.append(dataEl);
+  }
+  statTableEl.append(tableHeader);
+  for (let i = 0; i < allImageCandidates.length; i++) {
+    let rowEl = document.createElement('tr');
+    for (let j = 0; j < stats.length; j++) {
+      let dataEl = document.createElement('td');
+      switch (j) {
+      case 0:
+        dataEl.innerText = allImageCandidates[i].name;
+        rowEl.appendChild(dataEl);
+        break;
+      case 1:
+        dataEl.innerText = allImageCandidates[i].clickCount;
+        rowEl.appendChild(dataEl);
+        break;
+      case 2:
+        dataEl.innerText = allImageCandidates[i].seenCount;
+        rowEl.appendChild(dataEl);
+        break;
+      default:
+        dataEl.innerText = '???';
+      }
+      statTableEl.appendChild(rowEl);
+    }
+  }
+};
+
 ImageCandidate.handleCandidateClick = function (event) {
   event.preventDefault();
-  let targetImageEl = event.target;
-  console.log(targetImageEl.name);
-  ImageCandidate.getNextGroup();
-  ImageCandidate.renderCandidates();
-  //ImageCandidate.increaseTotals();
-  //ImageCandidate.drawAside();
+  if (currentRound >= totalNumberOfRounds) {
+    ImageCandidate.drawRound();
+    ImageCandidate.removeImageListeners();
+    ImageCandidate.drawStats();
+  } else {
+    let targetImageEl = event.target;
+    ImageCandidate.recordClick(targetImageEl);
+    ImageCandidate.getNextGroup();
+    ImageCandidate.renderCandidates();
+    currentRound++;
+    ImageCandidate.drawRound();
+  }
+  console.log(event);
+};
+
+ImageCandidate.removeImageListeners = function () {
+  let imageArray = document.querySelectorAll('.candidate');
+  for (let i = 0; i < imageArray.length; i++) {
+    imageArray[i].removeEventListener('click', ImageCandidate.handleCandidateClick);
+  }
 };
 
 // event listeners to images
@@ -136,3 +194,4 @@ ImageCandidate.createAllImageCandidates();
 ImageCandidate.getNextGroup();
 ImageCandidate.addImageListeners();
 ImageCandidate.renderCandidates();
+ImageCandidate.drawRound();
