@@ -22,13 +22,12 @@ const imageFiles = [
 ];
 
 const totalNumberOfRounds = 25;
+const candidatesPerScreen = 3;
+const stats = ['Name', 'Clicks', 'Times Seen'];
 let currentRound = 1;
 let allImageCandidates = [];
-let candidatesPerScreen = 3;
-let stats = ['Name', 'Clicks', 'Times Seen'];
 
 // constuctor for image object
-
 function ImageCandidate(name, fileName) {
   this.name = name;
   this.fileName = fileName;
@@ -158,11 +157,17 @@ ImageCandidate.drawStats = function () {
   }
 };
 
+ImageCandidate.handleChartClick = function (event) {
+  event.target.innerText = '';
+
+};
+
 ImageCandidate.handleBtnClick = function (event) {
   event.target.remove();
   ImageCandidate.drawStats();
   ImageCandidate.drawChart();
-
+  let chartDiv = document.getElementById('instructional-text');
+  chartDiv.addEventListener('click', ImageCandidate.handleChartClick);
 };
 
 
@@ -176,18 +181,19 @@ ImageCandidate.drawButton = function () {
 
 // gradient info found on the chart.js github issues: https://github.com/chartjs/Chart.js/issues/562
 ImageCandidate.drawChart = function () {
-  let barEl = document.getElementById('instructional-text');
-  let canvasBar = document.createElement('canvas');
-  barEl.innerText = '';
-  barEl.appendChild(canvasBar);
-  let ctx = canvasBar.getContext('2d');
+  let chartEl = document.getElementById('instructional-text');
+  let canvas = document.createElement('canvas');
+  chartEl.innerText = '';
+  chartEl.appendChild(canvas);
+  let ctx = canvas.getContext('2d');
   let clicksGradient = ctx.createLinearGradient(500, 0, 100, 0);
   let seenGradient = ctx.createLinearGradient(500, 0, 100, 0);
   clicksGradient.addColorStop(0, 'grey');
   clicksGradient.addColorStop(1, 'darkgrey');
   seenGradient.addColorStop(0, 'pink');
   seenGradient.addColorStop(1, 'salmon');
-  new Chart(ctx, {
+  //This is defined in the imported CDN chart.js
+  new Chart(ctx, { //eslint-disable-line
     type: 'bar',
     data: {
       labels: ImageCandidate.graphData.label,
@@ -236,9 +242,22 @@ ImageCandidate.addImageListeners = function () {
   }
 };
 
+
+// Main
+// Create number of img tags based off candidatesPerScreen
 ImageCandidate.createImageHolders(candidatesPerScreen);
+// Loop through image files array to create ImageCandidate instances
+// which push themselves into the allImageCandidates array.
 ImageCandidate.createAllImageCandidates();
+// Gets the next set of candidates taking care not to grab one that was seen last time.
+// these are placed in the currentSet array and their 'seenLast' is toggled to true.
+// The previous set's 'seenLast' is toggled back to false.
 ImageCandidate.getNextGroup();
+// Add click listeners on all the images.
+// The ImageCandidate.handleCandidateClick() takes over
 ImageCandidate.addImageListeners();
+
+// Renders all indexes in currentSet
+// for this first batch (the ImageCandidate.handleCandidateClick() takes over the rest.)
 ImageCandidate.renderCandidates();
 ImageCandidate.drawRound();
