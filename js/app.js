@@ -40,6 +40,11 @@ function ImageCandidate(name, fileName) {
 
 ImageCandidate.currentList = [];
 ImageCandidate.oldList = [];
+ImageCandidate.graphData = {
+  label: [],
+  numClicks: [],
+  numSeen: [],
+};
 
 ImageCandidate.createImageHolders = function (numberOfImages) {
   let parentElement = document.getElementById('selection-container');
@@ -113,6 +118,7 @@ ImageCandidate.drawRound = function () {
   roundCountEl.innerText = `Round ${currentRound} of ${totalNumberOfRounds}`;
 };
 
+
 ImageCandidate.drawStats = function () {
   let statTableEl = document.getElementById('stats-table');
   let tableHeader = document.createElement('tr');
@@ -121,23 +127,28 @@ ImageCandidate.drawStats = function () {
     dataEl.innerText = stats[i];
     tableHeader.append(dataEl);
   }
+
   statTableEl.append(tableHeader);
   for (let i = 0; i < allImageCandidates.length; i++) {
     let rowEl = document.createElement('tr');
+    let candidate = allImageCandidates[i];
     for (let j = 0; j < stats.length; j++) {
       let dataEl = document.createElement('td');
       switch (j) {
       case 0:
-        dataEl.innerText = allImageCandidates[i].name;
+        dataEl.innerText = candidate.name;
         rowEl.appendChild(dataEl);
+        ImageCandidate.graphData.label[i] = candidate.name;
         break;
       case 1:
-        dataEl.innerText = allImageCandidates[i].clickCount;
+        dataEl.innerText = candidate.clickCount;
         rowEl.appendChild(dataEl);
+        ImageCandidate.graphData.numClicks[i] = candidate.clickCount;
         break;
       case 2:
-        dataEl.innerText = allImageCandidates[i].seenCount;
+        dataEl.innerText = candidate.seenCount;
         rowEl.appendChild(dataEl);
+        ImageCandidate.graphData.numSeen[i] = candidate.seenCount;
         break;
       default:
         dataEl.innerText = '???';
@@ -150,6 +161,7 @@ ImageCandidate.drawStats = function () {
 ImageCandidate.handleBtnClick = function (event) {
   event.target.remove();
   ImageCandidate.drawStats();
+  ImageCandidate.drawChart();
 
 };
 
@@ -160,6 +172,37 @@ ImageCandidate.drawButton = function () {
   btnEl.innerText = 'View Results';
   parentEl.appendChild(btnEl);
   btnEl.addEventListener('click', this.handleBtnClick);
+};
+
+// gradient info found on the chart.js github issues: https://github.com/chartjs/Chart.js/issues/562
+ImageCandidate.drawChart = function () {
+  let barEl = document.getElementById('instructional-text');
+  let canvasBar = document.createElement('canvas');
+  barEl.innerText = '';
+  barEl.appendChild(canvasBar);
+  let ctx = canvasBar.getContext('2d');
+  let clicksGradient = ctx.createLinearGradient(500, 0, 100, 0);
+  let seenGradient = ctx.createLinearGradient(500, 0, 100, 0);
+  clicksGradient.addColorStop(0, 'grey');
+  clicksGradient.addColorStop(1, 'darkgrey');
+  seenGradient.addColorStop(0, 'pink');
+  seenGradient.addColorStop(1, 'salmon');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ImageCandidate.graphData.label,
+      datasets: [{
+        label: 'Number of Clicks',
+        data: ImageCandidate.graphData.numClicks,
+        backgroundColor: clicksGradient,
+      }, {
+        label: 'Times Seen',
+        data: ImageCandidate.graphData.numSeen,
+        backgroundColor: seenGradient,
+      }],
+    }
+  });
+
 };
 
 ImageCandidate.handleCandidateClick = function (event) {
