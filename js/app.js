@@ -22,13 +22,12 @@ const imageFiles = [
 ];
 
 const totalNumberOfRounds = 25;
+const candidatesPerScreen = 3;
+const stats = ['Name', 'Clicks', 'Times Seen'];
 let currentRound = 1;
 let allImageCandidates = [];
-let candidatesPerScreen = 3;
-let stats = ['Name', 'Clicks', 'Times Seen'];
 
 // constuctor for image object
-
 function ImageCandidate(name, fileName) {
   this.name = name;
   this.fileName = fileName;
@@ -40,6 +39,11 @@ function ImageCandidate(name, fileName) {
 
 ImageCandidate.currentList = [];
 ImageCandidate.oldList = [];
+ImageCandidate.graphData = {
+  label: [],
+  numClicks: [],
+  numSeen: [],
+};
 
 ImageCandidate.createImageHolders = function (numberOfImages) {
   let parentElement = document.getElementById('selection-container');
@@ -113,6 +117,7 @@ ImageCandidate.drawRound = function () {
   roundCountEl.innerText = `Round ${currentRound} of ${totalNumberOfRounds}`;
 };
 
+
 ImageCandidate.drawStats = function () {
   let statTableEl = document.getElementById('stats-table');
   let tableHeader = document.createElement('tr');
@@ -121,23 +126,28 @@ ImageCandidate.drawStats = function () {
     dataEl.innerText = stats[i];
     tableHeader.append(dataEl);
   }
+
   statTableEl.append(tableHeader);
   for (let i = 0; i < allImageCandidates.length; i++) {
     let rowEl = document.createElement('tr');
+    let candidate = allImageCandidates[i];
     for (let j = 0; j < stats.length; j++) {
       let dataEl = document.createElement('td');
       switch (j) {
       case 0:
-        dataEl.innerText = allImageCandidates[i].name;
+        dataEl.innerText = candidate.name;
         rowEl.appendChild(dataEl);
+        ImageCandidate.graphData.label[i] = candidate.name;
         break;
       case 1:
-        dataEl.innerText = allImageCandidates[i].clickCount;
+        dataEl.innerText = candidate.clickCount;
         rowEl.appendChild(dataEl);
+        ImageCandidate.graphData.numClicks[i] = candidate.clickCount;
         break;
       case 2:
-        dataEl.innerText = allImageCandidates[i].seenCount;
+        dataEl.innerText = candidate.seenCount;
         rowEl.appendChild(dataEl);
+        ImageCandidate.graphData.numSeen[i] = candidate.seenCount;
         break;
       default:
         dataEl.innerText = '???';
@@ -147,10 +157,17 @@ ImageCandidate.drawStats = function () {
   }
 };
 
+ImageCandidate.handleChartClick = function (event) {
+  event.target.innerText = '';
+
+};
+
 ImageCandidate.handleBtnClick = function (event) {
   event.target.remove();
   ImageCandidate.drawStats();
-
+  ImageCandidate.drawChart();
+  let chartDiv = document.getElementById('instructional-text');
+  chartDiv.addEventListener('click', ImageCandidate.handleChartClick);
 };
 
 
@@ -160,6 +177,38 @@ ImageCandidate.drawButton = function () {
   btnEl.innerText = 'View Results';
   parentEl.appendChild(btnEl);
   btnEl.addEventListener('click', this.handleBtnClick);
+};
+
+// gradient info found on the chart.js github issues: https://github.com/chartjs/Chart.js/issues/562
+ImageCandidate.drawChart = function () {
+  let chartEl = document.getElementById('instructional-text');
+  let canvas = document.createElement('canvas');
+  chartEl.innerText = '';
+  chartEl.appendChild(canvas);
+  let ctx = canvas.getContext('2d');
+  let clicksGradient = ctx.createLinearGradient(500, 0, 100, 0);
+  let seenGradient = ctx.createLinearGradient(500, 0, 100, 0);
+  clicksGradient.addColorStop(0, 'grey');
+  clicksGradient.addColorStop(1, 'darkgrey');
+  seenGradient.addColorStop(0, 'pink');
+  seenGradient.addColorStop(1, 'salmon');
+  //This is defined in the imported CDN chart.js
+  new Chart(ctx, { //eslint-disable-line
+    type: 'bar',
+    data: {
+      labels: ImageCandidate.graphData.label,
+      datasets: [{
+        label: 'Number of Clicks',
+        data: ImageCandidate.graphData.numClicks,
+        backgroundColor: clicksGradient,
+      }, {
+        label: 'Times Seen',
+        data: ImageCandidate.graphData.numSeen,
+        backgroundColor: seenGradient,
+      }],
+    }
+  });
+
 };
 
 ImageCandidate.handleCandidateClick = function (event) {
@@ -193,9 +242,22 @@ ImageCandidate.addImageListeners = function () {
   }
 };
 
+
+// Main
+// Create number of img tags based off candidatesPerScreen
 ImageCandidate.createImageHolders(candidatesPerScreen);
+// Loop through image files array to create ImageCandidate instances
+// which push themselves into the allImageCandidates array.
 ImageCandidate.createAllImageCandidates();
+// Gets the next set of candidates taking care not to grab one that was seen last time.
+// these are placed in the currentSet array and their 'seenLast' is toggled to true.
+// The previous set's 'seenLast' is toggled back to false.
 ImageCandidate.getNextGroup();
+// Add click listeners on all the images.
+// The ImageCandidate.handleCandidateClick() takes over
 ImageCandidate.addImageListeners();
+
+// Renders all indexes in currentSet
+// for this first batch (the ImageCandidate.handleCandidateClick() takes over the rest.)
 ImageCandidate.renderCandidates();
 ImageCandidate.drawRound();
