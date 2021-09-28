@@ -8,11 +8,12 @@ body {
   background-color: white;
 }
 main {
-  background-color: white;
-  height: 90%;
+  height: 60%;
+  display: inline-block;
 }
 h1 {
   font-size: 3em;
+  font-weight: 999;
   padding: 1em;
 }
 h2 {
@@ -28,6 +29,7 @@ aside {
   width: 25%;
   height: 90%;
   background-color: #4a4a4a;
+  border-bottom-right-radius: 50px;
 }
 
 article {
@@ -38,9 +40,17 @@ article {
 }
 
 footer {
+  text-align: center;
   display: block;
-  height: 10%;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
   background-color: #2f2f2f;
+  color: white;
+}
+footer p {
+  padding: 100px;
+
 }
 
 #selection-container {
@@ -52,15 +62,60 @@ footer {
   padding: 2em;
   gap: 2em;
 }
+#instructional-text p {
+  font-size: 1.3em;
+  line-height: 1.5em;
+  
+}
+p#main-instructions {
+  font-size: 2em;
+  font-weight: bold;
+  padding-bottom: 1em;
+  padding-left: 2em;
+  padding-right: 2em;
+}
+#instructional-text {
+  text-align: center;
+  margin-top: 5em;
+  padding-left: 2em;
+  padding-right: 2em;
+}
 
 img.candidate {
   max-width: 100%; 
   max-height: 300px;
   border: solid thick black;
+  box-shadow:
+    1px 2px 2px #0000001f ,
+    2px 4px 4px  #0000001f ,
+    4px 8px 8px  #0000001f ,
+    8px 16px 16px  #0000001f ,
+    16px 32px 32px  #0000001f;
 }
+
+img.candidate:hover {
+  box-shadow:
+    1px 2px 2px #00000050,
+    2px 4px 4px  #00000050,
+    4px 8px 8px  #00000050,
+    8px 16px 16px  #00000080,
+    16px 32px 32px  #00000080;
+}
+img.candidate:active {
+  border: solid thick #2f2f2f;
+  filter: blur(1px);
+  filter: opacity(80%);
+  box-shadow:
+    1px 2px 2px #00000080,
+    2px 4px 4px #00000080,
+    4px 8px 8px #00000080, 
+    8px 16px 16px grey,
+    16px 32px 32px grey;
+}
+
 table {
   display: inline-block;
-  margin: 2em 2em;
+  margin: 4em 2em;
   background-color: #bdbdbd;
     box-shadow:
     1px 2px 2px #0000001f ,

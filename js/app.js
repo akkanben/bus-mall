@@ -161,7 +161,6 @@ ImageCandidate.handleCandidateClick = function (event) {
     currentRound++;
     ImageCandidate.drawRound();
   }
-  console.log(event);
 };
 
 ImageCandidate.removeImageListeners = function () {
