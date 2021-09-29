@@ -25,7 +25,7 @@ const totalNumberOfRounds = 25;
 const candidatesPerScreen = 3;
 const stats = ['Name', 'Clicks', 'Times Seen'];
 let currentRound = 1;
-let allImageCandidates = [];
+
 
 // constuctor for image object
 function ImageCandidate(name, fileName) {
@@ -33,12 +33,11 @@ function ImageCandidate(name, fileName) {
   this.fileName = fileName;
   this.clickCount = 0;
   this.seenCount = 0;
-  this.seenLast = false;
-  allImageCandidates.push(this);
+  this.isCurrent = false;
+  ImageCandidate.all.push(this);
 }
 
-ImageCandidate.currentList = [];
-ImageCandidate.oldList = [];
+ImageCandidate.all = [];
 ImageCandidate.graphData = {
   label: [],
   numClicks: [],
@@ -55,9 +54,9 @@ ImageCandidate.createImageHolders = function (numberOfImages) {
 };
 
 ImageCandidate.recordClick = function (clickedElement) {
-  for (let i = 0; i < allImageCandidates.length; i++) {
-    if (allImageCandidates[i].name === clickedElement.name) {
-      allImageCandidates[i].clickCount++;
+  for (let i = 0; i < ImageCandidate.all.length; i++) {
+    if (ImageCandidate.all[i].name === clickedElement.name) {
+      ImageCandidate.all[i].clickCount++;
     }
   }
 };
@@ -73,43 +72,66 @@ ImageCandidate.createAllImageCandidates = function () {
 
 // function to generate a valid index
 ImageCandidate.getRandomAvaliableIndex = function () {
-  let randomIndex = null;
-  while (randomIndex === null || allImageCandidates[randomIndex].seenLast === true) {
-    randomIndex = Math.floor(Math.random() * allImageCandidates.length);
+  let randomIndex = Math.floor(Math.random() * ImageCandidate.all.length);
+  while (ImageCandidate.all[randomIndex].isCurrent === true) {
+    randomIndex = Math.floor(Math.random() * ImageCandidate.all.length);
   }
   return randomIndex;
 };
 
-// function to render members of currentSet
-ImageCandidate.renderCandidates = function () {
-  let imageArray = document.querySelectorAll('.candidate');
-  for (let i = 0; i < ImageCandidate.currentList.length; i++) {
-    let imgEl = imageArray[i];
-    imgEl.name = allImageCandidates[ImageCandidate.currentList[i]].name;
-    imgEl.src = `./img/${allImageCandidates[ImageCandidate.currentList[i]].fileName}`;
+ImageCandidate.resetIsCurrent = function () {
+  for (let i = 0; i < ImageCandidate.all.length; i++) {
+    ImageCandidate.all[i].isCurrent = false;
   }
 };
 
-ImageCandidate.resetLastSeen = function () {
-  for (let i = 0; i < ImageCandidate.oldList.length; i++) {
-    allImageCandidates[ImageCandidate.oldList[i]].seenLast = false;
+ImageCandidate.findCandidateByName = function (searchName) {
+  for (let i = 0; i < ImageCandidate.all.length; i++) {
+    let currentCandidate = ImageCandidate.all[i];
+    if (currentCandidate.name === searchName) {
+      return currentCandidate;
+    }
   }
 };
 
-ImageCandidate.currentListToOldList = function () {
-  for (let i = 0; i < candidatesPerScreen; i++) {
-    ImageCandidate.oldList[i] = ImageCandidate.currentList[i];
+ImageCandidate.markCurrentTrue = function (elementArray) {
+  if (currentRound > 1) {
+    for (let i = 0; i < elementArray.length; i++) {
+      ImageCandidate.findCandidateByName(elementArray[i].name).isCurrent = true;
+    }
   }
 };
 
-ImageCandidate.getNextGroup = function () {
-  for (let i = 0; i < candidatesPerScreen; i++) {
-    ImageCandidate.currentList[i] = ImageCandidate.getRandomAvaliableIndex();
-    allImageCandidates[ImageCandidate.currentList[i]].seenLast = true;
-    allImageCandidates[ImageCandidate.currentList[i]].seenCount++;
+// function to render next group and increment the seenCount
+ImageCandidate.renderNextGroup = function () {
+  let currentImageElements = ImageCandidate.getCurrentlyRendered();
+  ImageCandidate.markCurrentTrue(currentImageElements);
+  for (let i = 0; i < currentImageElements.length; i++) {
+    let randomIndex = ImageCandidate.getRandomAvaliableIndex();
+    let nextObject = ImageCandidate.all[randomIndex];
+    nextObject.isCurrent = true;
+    let imgEl = currentImageElements[i];
+    imgEl.name = nextObject.name;
+    imgEl.src = `./img/${nextObject.fileName}`;
+    nextObject.seenCount++;
   }
-  ImageCandidate.resetLastSeen();
-  ImageCandidate.currentListToOldList();
+  //sets all the ImageCandidates.current back to false
+  ImageCandidate.resetIsCurrent();
+};
+
+ImageCandidate.getCurrentlyRendered = function () {
+  return document.querySelectorAll('.candidate');
+};
+
+ImageCandidate.prototype.isCurrentlyRendered = function () {
+  // if this is currently rendered return true else false
+  let currentImageElements = ImageCandidate.getCurrentlyRendered();
+  for (let i = 0; i < currentImageElements.length; i++) {
+    if (this.name === currentImageElements[i].name) {
+      return true;
+    }
+  }
+  return false;
 };
 
 ImageCandidate.drawRound = function () {
@@ -128,9 +150,9 @@ ImageCandidate.drawStats = function () {
   }
 
   statTableEl.append(tableHeader);
-  for (let i = 0; i < allImageCandidates.length; i++) {
+  for (let i = 0; i < ImageCandidate.all.length; i++) {
     let rowEl = document.createElement('tr');
-    let candidate = allImageCandidates[i];
+    let candidate = ImageCandidate.all[i];
     for (let j = 0; j < stats.length; j++) {
       let dataEl = document.createElement('td');
       switch (j) {
@@ -157,17 +179,10 @@ ImageCandidate.drawStats = function () {
   }
 };
 
-ImageCandidate.handleChartClick = function (event) {
-  event.target.innerText = '';
-
-};
-
 ImageCandidate.handleBtnClick = function (event) {
   event.target.remove();
   ImageCandidate.drawStats();
   ImageCandidate.drawChart();
-  let chartDiv = document.getElementById('instructional-text');
-  chartDiv.addEventListener('click', ImageCandidate.handleChartClick);
 };
 
 
@@ -220,8 +235,7 @@ ImageCandidate.handleCandidateClick = function (event) {
   } else {
     let targetImageEl = event.target;
     ImageCandidate.recordClick(targetImageEl);
-    ImageCandidate.getNextGroup();
-    ImageCandidate.renderCandidates();
+    ImageCandidate.renderNextGroup();
     currentRound++;
     ImageCandidate.drawRound();
   }
@@ -243,21 +257,11 @@ ImageCandidate.addImageListeners = function () {
 };
 
 
-// Main
-// Create number of img tags based off candidatesPerScreen
-ImageCandidate.createImageHolders(candidatesPerScreen);
-// Loop through image files array to create ImageCandidate instances
-// which push themselves into the allImageCandidates array.
-ImageCandidate.createAllImageCandidates();
-// Gets the next set of candidates taking care not to grab one that was seen last time.
-// these are placed in the currentSet array and their 'seenLast' is toggled to true.
-// The previous set's 'seenLast' is toggled back to false.
-ImageCandidate.getNextGroup();
-// Add click listeners on all the images.
-// The ImageCandidate.handleCandidateClick() takes over
-ImageCandidate.addImageListeners();
 
-// Renders all indexes in currentSet
-// for this first batch (the ImageCandidate.handleCandidateClick() takes over the rest.)
-ImageCandidate.renderCandidates();
+ImageCandidate.createImageHolders(candidatesPerScreen);
+ImageCandidate.createAllImageCandidates();
+ImageCandidate.renderNextGroup();
+ImageCandidate.addImageListeners();
+//draw the first round
 ImageCandidate.drawRound();
+
