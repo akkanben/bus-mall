@@ -15,6 +15,7 @@ const imageFiles = [
   'pet-sweep.jpg',
   'scissors.jpg',
   'shark.jpg',
+  'sweep.png',
   'tauntaun.jpg',
   'unicorn.jpg',
   'water-can.jpg',
@@ -44,6 +45,26 @@ ImageCandidate.graphData = {
   numSeen: [],
 };
 
+ImageCandidate.saveToLocalStorage = function (data) {
+  localStorage.setItem('savedData', JSON.stringify(data));
+};
+
+ImageCandidate.getFromLocalStorage = function () {
+  if (localStorage.length > 0) {
+    return JSON.parse(localStorage.getItem('savedData'));
+  }
+};
+
+ImageCandidate.addStorageTotalsToCurrent = function () {
+  if (localStorage.length > 0) {
+    let storedTotals = ImageCandidate.getFromLocalStorage();
+    for (let i = 0; i < ImageCandidate.all.length; i++) {
+      ImageCandidate.graphData.numSeen[i] += storedTotals.numSeen[i];
+      ImageCandidate.graphData.numClicks[i] += storedTotals.numClicks[i];
+    }
+  }
+};
+
 ImageCandidate.createImageHolders = function (numberOfImages) {
   let parentElement = document.getElementById('selection-container');
   for (let i = 0; i < numberOfImages; i++) {
@@ -64,7 +85,7 @@ ImageCandidate.recordClick = function (clickedElement) {
 ImageCandidate.createAllImageCandidates = function () {
   for (let i = 0; i < imageFiles.length; i++) {
     let currentFile = imageFiles[i];
-    // assumes all images end '.jpg' so - 4 from the end
+    // assumes all images end '.jpg' or '.png' so - 4 from the end
     let currentName = currentFile.slice(0, currentFile.length - 4);
     new ImageCandidate(currentName, currentFile);
   }
@@ -177,6 +198,8 @@ ImageCandidate.drawStats = function () {
       statTableEl.appendChild(rowEl);
     }
   }
+  ImageCandidate.addStorageTotalsToCurrent();
+  ImageCandidate.saveToLocalStorage(ImageCandidate.graphData);
 };
 
 ImageCandidate.handleBtnClick = function (event) {
@@ -221,6 +244,9 @@ ImageCandidate.drawChart = function () {
         data: ImageCandidate.graphData.numSeen,
         backgroundColor: seenGradient,
       }],
+    },
+    options: {
+      responsive: true,
     }
   });
 
