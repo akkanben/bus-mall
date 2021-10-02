@@ -45,16 +45,20 @@ ImageCandidate.graphData = {
   numSeen: [],
 };
 
+// Local storage setter
 ImageCandidate.saveToLocalStorage = function (data) {
   localStorage.setItem('savedData', JSON.stringify(data));
 };
 
+// Local storage getter
 ImageCandidate.getFromLocalStorage = function () {
   if (localStorage.length > 0) {
     return JSON.parse(localStorage.getItem('savedData'));
   }
 };
 
+// Add localStorage click counts and seen counts to the graphData object
+// This runs before the graph is rendered.
 ImageCandidate.addStorageTotalsToCurrent = function () {
   if (localStorage.length > 0) {
     let storedTotals = ImageCandidate.getFromLocalStorage();
@@ -65,6 +69,7 @@ ImageCandidate.addStorageTotalsToCurrent = function () {
   }
 };
 
+// Create initial img elements and attache them to the section
 ImageCandidate.createImageHolders = function (numberOfImages) {
   let parentElement = document.getElementById('selection-container');
   for (let i = 0; i < numberOfImages; i++) {
@@ -74,6 +79,7 @@ ImageCandidate.createImageHolders = function (numberOfImages) {
   }
 };
 
+// Increment the click count on the image clicked
 ImageCandidate.recordClick = function (clickedElement) {
   for (let i = 0; i < ImageCandidate.all.length; i++) {
     if (ImageCandidate.all[i].name === clickedElement.name) {
@@ -82,6 +88,7 @@ ImageCandidate.recordClick = function (clickedElement) {
   }
 };
 
+// Run the ImageCandidate constructor for all the images in the imageFiles array
 ImageCandidate.createAllImageCandidates = function () {
   for (let i = 0; i < imageFiles.length; i++) {
     let currentFile = imageFiles[i];
@@ -91,7 +98,8 @@ ImageCandidate.createAllImageCandidates = function () {
   }
 };
 
-// function to generate a valid index
+// Function to generate a random index for an ImageCandidate
+// that doesn't have isCurent flagged as true
 ImageCandidate.getRandomAvaliableIndex = function () {
   let randomIndex = Math.floor(Math.random() * ImageCandidate.all.length);
   while (ImageCandidate.all[randomIndex].isCurrent === true) {
@@ -100,12 +108,14 @@ ImageCandidate.getRandomAvaliableIndex = function () {
   return randomIndex;
 };
 
+// Set all ImageCandidates isCurrent to false
 ImageCandidate.resetIsCurrent = function () {
   for (let i = 0; i < ImageCandidate.all.length; i++) {
     ImageCandidate.all[i].isCurrent = false;
   }
 };
 
+// Iterate ImageCandidate.all for a matching name
 ImageCandidate.findCandidateByName = function (searchName) {
   for (let i = 0; i < ImageCandidate.all.length; i++) {
     let currentCandidate = ImageCandidate.all[i];
@@ -115,6 +125,7 @@ ImageCandidate.findCandidateByName = function (searchName) {
   }
 };
 
+// Marks all the ImageCandidates that match-by-name the image elements in the given array
 ImageCandidate.markCurrentTrue = function (elementArray) {
   if (currentRound > 1) {
     for (let i = 0; i < elementArray.length; i++) {
@@ -123,7 +134,8 @@ ImageCandidate.markCurrentTrue = function (elementArray) {
   }
 };
 
-// function to render next group and increment the seenCount
+// Iterates the currentImageElements and finds valid random images to render
+// and also increments the seenCount for each ImageCandidate rendered.
 ImageCandidate.renderNextGroup = function () {
   let currentImageElements = ImageCandidate.getCurrentlyRendered();
   ImageCandidate.markCurrentTrue(currentImageElements);
@@ -140,12 +152,13 @@ ImageCandidate.renderNextGroup = function () {
   ImageCandidate.resetIsCurrent();
 };
 
+// Returns an array of '.candidate' image elements on the page.
 ImageCandidate.getCurrentlyRendered = function () {
   return document.querySelectorAll('.candidate');
 };
 
+// Checks if this ImageCandidate is currently rendered.
 ImageCandidate.prototype.isCurrentlyRendered = function () {
-  // if this is currently rendered return true else false
   let currentImageElements = ImageCandidate.getCurrentlyRendered();
   for (let i = 0; i < currentImageElements.length; i++) {
     if (this.name === currentImageElements[i].name) {
@@ -155,12 +168,16 @@ ImageCandidate.prototype.isCurrentlyRendered = function () {
   return false;
 };
 
+// Renders the round number in the left aside.
 ImageCandidate.drawRound = function () {
   let roundCountEl = document.getElementById('round-count');
   roundCountEl.innerText = `Round ${currentRound} of ${totalNumberOfRounds}`;
 };
 
-
+// Renders and tallies the current tests totals to a table in the aside.
+// The table is not cumulative data like the chart -- it's just this round.
+//
+// This function also adds the totals to the graphData for the cumulative numbers.
 ImageCandidate.drawStats = function () {
   let statTableEl = document.getElementById('stats-table');
   let tableHeader = document.createElement('tr');
@@ -169,8 +186,10 @@ ImageCandidate.drawStats = function () {
     dataEl.innerText = stats[i];
     tableHeader.append(dataEl);
   }
-
   statTableEl.append(tableHeader);
+
+  // This iterates all of the ImageCandidates and then iterates the stats array
+  // and switches on 0:"Names", 1:"Clicks", and 2:"Times Seen"
   for (let i = 0; i < ImageCandidate.all.length; i++) {
     let rowEl = document.createElement('tr');
     let candidate = ImageCandidate.all[i];
@@ -198,13 +217,14 @@ ImageCandidate.drawStats = function () {
       statTableEl.appendChild(rowEl);
     }
   }
-  ImageCandidate.addStorageTotalsToCurrent();
-  ImageCandidate.saveToLocalStorage(ImageCandidate.graphData);
 };
 
+// Handles the button that appears at the end of voting.
 ImageCandidate.handleBtnClick = function (event) {
   event.target.remove();
   ImageCandidate.drawStats();
+  ImageCandidate.addStorageTotalsToCurrent();
+  ImageCandidate.saveToLocalStorage(ImageCandidate.graphData);
   ImageCandidate.drawChart();
 };
 
@@ -217,6 +237,7 @@ ImageCandidate.drawButton = function () {
   btnEl.addEventListener('click', this.handleBtnClick);
 };
 
+// This uses chart.js and renders the nifty chart over the instructions.
 // gradient info found on the chart.js github issues: https://github.com/chartjs/Chart.js/issues/562
 ImageCandidate.drawChart = function () {
   let chartEl = document.getElementById('instructional-text');
@@ -252,6 +273,7 @@ ImageCandidate.drawChart = function () {
 
 };
 
+// Controls the flow after the first images get drawn until the last ImageCandidate set.
 ImageCandidate.handleCandidateClick = function (event) {
   event.preventDefault();
   if (currentRound >= totalNumberOfRounds) {
@@ -267,6 +289,7 @@ ImageCandidate.handleCandidateClick = function (event) {
   }
 };
 
+// Removes the listeners, to be used after the last round.
 ImageCandidate.removeImageListeners = function () {
   let imageArray = document.querySelectorAll('.candidate');
   for (let i = 0; i < imageArray.length; i++) {
@@ -274,7 +297,7 @@ ImageCandidate.removeImageListeners = function () {
   }
 };
 
-// event listeners to images
+// Adds event listeners to all the '.candidate' image elements.
 ImageCandidate.addImageListeners = function () {
   let imageArray = document.querySelectorAll('.candidate');
   for (let i = 0; i < imageArray.length; i++) {
@@ -282,12 +305,11 @@ ImageCandidate.addImageListeners = function () {
   }
 };
 
-
-
+// Start here and then ImageCandidate.handleCandidateClick takes over with user input
 ImageCandidate.createImageHolders(candidatesPerScreen);
 ImageCandidate.createAllImageCandidates();
 ImageCandidate.renderNextGroup();
 ImageCandidate.addImageListeners();
-//draw the first round
+// Renders the text for the first round
 ImageCandidate.drawRound();
 
