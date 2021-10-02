@@ -126,6 +126,7 @@ ImageCandidate.findCandidateByName = function (searchName) {
 };
 
 // Marks all the ImageCandidates that match-by-name the image elements in the given array
+// we skip this if the round is the first round
 ImageCandidate.markCurrentTrue = function (elementArray) {
   if (currentRound > 1) {
     for (let i = 0; i < elementArray.length; i++) {
@@ -149,7 +150,10 @@ ImageCandidate.renderNextGroup = function () {
     nextObject.seenCount++;
   }
   //sets all the ImageCandidates.current back to false
-  ImageCandidate.resetIsCurrent();
+  //unless it's the first round
+  if (currentRound > 1) {
+    ImageCandidate.resetIsCurrent();
+  }
 };
 
 // Returns an array of '.candidate' image elements on the page.
